@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+
+{% block head %}
+
+{# ChartJS #}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+
+<style>
+
+    h2{
+        margin-top: 30px;
+    }
+    #safest{
+        margin-top: 50px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    .colorB {
+        width: 40px;
+        height: 20px;
+        float:left;
+      
+    }
+
+    .mapframe {
+        height:800px;
+        width:140%;
+    }
+
+    .cat0 {
+        background: #e5f5e0;
+    }
+
+    .cat1 {
+        background: #f7fcb9;
+    }
+
+    .cat2 {
+        background: #ffeda0;
+    }
+    .cat3 {
+        background: #feb24c;
+    }
+    .cat4 {
+        background: #fdae6b;
+    }
+    .cat5 {
+        background: #fc9272;
+    }
+    .cat6 {
+        background: #f03b20;
+    }
+    .cat7 {
+        background: #e6550d;
+    }
+    .cat8 {
+        background: #de2d26;
+    }
+
+</style>
+
+{% endblock %}
+
+{% block body %}
+<div class="container" >
+    <div class="row">
+        <div class="col" id="container">
+            <h2>San Francisco Neighborhoods</h2>
+            <div class="row"> 
+                <form id="neighborhoods">
+                    <div id="neigh-info">
+                      <label for="neigh"></label>
+                      <select id="neighs" class="browser-default custom-select" name="neighs" onchange="changeNeigh();">
+                        <option selected>Select a neighborhood</option>
+                        {% for neigh in list_neigh%}
+                            {% for key, value in neigh.items() %}
+                                <option value={{ key }}>{{ value }}</option>
+                            {% endfor %}
+                        {% endfor %}
+                      </select>
+                    </div>
+
+                    <div id="crime-picker"></div>
+                  <!-- <input type="submit"> -->
+                </form>
+            </div>
+            <div id="div-chart" class="row"></div>
+        </div>
+        <div class="col">
+            <h6 id="safest">Safety scale</h6><div class="colorB cat0"></div>
+            <div class="colorB cat1"></div>
+            <div class="colorB cat2"></div>
+            <div class="colorB cat3"></div>
+            <div class="colorB cat4"></div>
+            <div class="colorB cat5"></div>
+            <div class="colorB cat6"></div>
+            <div class="colorB cat7"></div>
+            <div class="colorB cat8"></div>
+
+            <iframe id="mapframe" class="mapframe" src="/mapNeigh" frameborder="0" scrolling="no" allowfullscreen>
+            </iframe>
+        </div>
+    <div>
+</div>
+
+<script type="text/javascript">
+    function changeNeigh() {
+        // Clear #crime-picker and div-chart
+        $('#crime-picker').empty();
+        $('#div-chart').empty();
+        let iframe = $('#mapframe');
+        iframe.attr('src', "/mapNeigh");
+
+        
+        const formContainer = $('#neighborhoods');
+        const selectBox = document.getElementById("neighs");
+        const selectedValue = selectBox.options[selectBox.selectedIndex].value;
+
+        $.post('/selectNeigh', {"neigh_id":selectedValue}, (res) => {
+            console.log(res)
+            keys=Object.keys(res)
+
+            const divcat = $('<div id="div-cat"></div>')
+            const label = $("<br><label> </label>")
+            divcat.append(label);
+            let selectcat = $('<select id="cat" class="browser-default custom-select" name="cat" onchange="changeCat();">');
+            divcat.append(selectcat);
+            $('#crime-picker').append(divcat);
+            const cat1 = $("<option selected>Select a category </option>");
+                selectcat.append(cat1);
+            for (let i of keys){
+                const cat = $("<option value="+i+">"+i+"</option>");
+                selectcat.append(cat);
+            }  
+        });
+    }
+
+    function changeCat(){
+        const category = document.getElementById("cat");
+        const selectedcat = category.options[category.selectedIndex].value;
+        const namecat = $("#cat option:selected").html();
+
+        console.log(selectedcat)
+        console.log("namecat"+namecat)
+        const selectBox = document.getElementById("neighs");
+        const selectedValue = selectBox.options[selectBox.selectedIndex].value;
+
+        $.post('/selectcat', {"neigh_id":selectedValue,"cat_name":namecat}, (res) => {
+            console.log(res)
+            const list_x=Object.keys(res);
+            const list_y=Object.values(res);
+            console.log(list_x)
+            console.log(list_y)
+
+            const chartDiv = $('#div-chart');
+            const canvas = $('<canvas style="display: block; width: 509px; height: 254px;" width="509" height="254" class="chartjs-render-monitor"></canvas>');
+            chartDiv.append(canvas);
+
+            const MONTHS = ['January/2018', 'February/2018', 'March/2018', 'April/2018', 'May/2018', 'June/2018', 'July/2018', 'August/2018', 'September/2018', 'October/2018', 'November/2018', 'December/2018','January/2019', 'February/2019', 'March/2019', 'April/2019', 'May/2019', 'June/2019', 'July/2019', 'August/2019', 'September/2019', 'October/2019', 'November/2019', 'December/2019'];
+            let config = {
+                type: 'line',
+                data: {
+                    labels: MONTHS,
+                    datasets: [{
+                        label: 'Crime dataset of '+ namecat,
+                        backgroundColor: '#FFEBCD',
+                        borderColor:  '#A52A2A',
+                        data: list_y,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Number of crimes per month'
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                    scales: {
+                        xAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Months'
+                            }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Number of crimes'
+                            }
+                        }]
+                    }
+                }
+            };
+            new Chart(canvas, config);
+        });
+        let iframe = $('#mapframe');
+        iframe.attr('src', "/dropmarkers");
+    
+    }    
+</script>
+
+{% endblock %}

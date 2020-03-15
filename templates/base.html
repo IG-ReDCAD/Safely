@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SafeWalk</title>
+
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.11/css/all.css">
+    <!-- added for icon refresh in direction -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+
+    <!-- jquery -->
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.js"
+      integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+      crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="/static/css/base.css">
+
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+
+    <header>
+      <nav class="navbar navbar-dark bg-dark" id="nav-bar">
+            <!-- Navbar content -->
+        <div>
+            <a class="navbar-brand" href="/"><i class="fa fa-fw fa-home"></i><font color="#cce6ff">S</font><font color="yellow">a</font><font color="#e6e6e6">f</font><font color="#cce6ff">e</font><font color="yellow">l</font><font color="#e6e6e6">y</font></a>
+        </div>
+        <p><a class="navbar-brand nav-style" href="/direction"><i class="fas fa-location-arrow"></i> Directions</a></p>
+        <p><a class="navbar-brand nav-style" href="/neighClass"><i class="fas fa-map-pin"></i> Neighborhoods </a></p>
+        <!-- <p><a class="navbar-brand nav-style" href="/neighgeocode">Neighborhood geocode</a></p> -->
+        {% if user != "None" %}
+           <p><a class="navbar-brand nav-style" href="/profile/{{ user.user_id }}"><i class="fas fa-user"></i> Profile</a></p>
+           <p><a class="navbar-brand nav-style" href="/logout"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a></p>
+           {% endif %}
+           {% if user == "None" %}
+           <p><a class="navbar-brand nav-style" href="/login"><i class="fa fa-fw fa-user"></i>Login</a></p>
+           <p><a class="navbar-brand nav-style" href="/signin"><i class="fas fa-sign-in-alt"></i> Register</a></p>
+        {% endif %}
+        </nav>
+    </header>
+    
+    {% block body %}
+    {% endblock %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </body>
+</html>
+

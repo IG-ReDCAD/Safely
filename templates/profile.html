@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/profile.css">
+{# ChartJS #}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+{% endblock %}
+
+{% block body %}
+  <div class="container my-5 py-5">
+    <!--Section: Content-->
+    <section>
+      <div class="card">
+        <div class="card-body">
+          <h3 class="text-center font-weight-bold mb-3">My Routes</h3>
+          <hr>
+
+          <!--Grid row-->
+          <div class="row">
+            <div class="col-md-6 mb-4 mb-md-0">
+                <h4 data-user-id="{{ user.user_id }}" id="userid">{{ user.name }} ({{ user.user_id }})</h4>
+                <small><cite title="San Francisco, USA">San Francisco, USA <i class="glyphicon glyphicon-map-marker">
+                </i></cite></small>
+                <p>
+                <i class="glyphicon glyphicon-envelope"></i>{{ user.email }} <br />    
+            </div>
+            
+
+            <!--Grid column-->
+            <div class="col-md-6 mb-4 mb-md-0" id="table">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Origin</th>
+                    <th scope="col">Destination</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if user.routes %}
+                    <i class="glyphicon glyphicon-globe"></i>Routes<br />
+                    {% for route in user.routes %}
+                    <tr>
+                      <td>{{ route.route_name }}</td>
+                      <td>{{ route.route_start }}</td>
+                      <td>{{ route.route_end }}</td>
+                    </tr>
+                    {% endfor %}   
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <!--Grid column-->
+          </div>
+          <!--Grid row-->
+          <div class="row">
+            <div class="col">
+                <h3 class="text-center font-weight-bold"><i class="fas fa-map-marker-alt"></i> Safety Chart</h3>
+            </div>
+            <div class="col" id="charts">
+                 <script src="/static/js/profile.js"></script>  
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!--Section: Content-->
+  </div>
+{% endblock %}
+
+
+        
