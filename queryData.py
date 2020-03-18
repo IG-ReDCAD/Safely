@@ -13,7 +13,6 @@ from server import app
 
 # Read data from file 
 data = pd.read_csv("data/Police_Department_Incident_Reports__2018_to_Present.csv") 
-data = data.dropna()
 
 #find the number of rows and columns in a csv file
 df = pd.DataFrame(data)
