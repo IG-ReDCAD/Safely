@@ -89,13 +89,21 @@ export MY_PHONE="YOUR_PHONE_NUMBER_HERE"
 ```
 source secrets.sh
 ```
-* Download the CSV file:
+* Download the SF crimes CSV files:
 ```
 https://data.sfgov.org/Public-Safety/Police-Department-Incident-Reports-2018-to-Present/wg3w-h783/data
 ```
-* Save the CSV file into a `data` folder and name it: 
+* Save the crimes CSV file into a `data` folder and name it: 
 ```
 Police_Department_Incident_Reports__2018_to_Present.csv
+```
+* Download the SF neighborhoods CSV files:
+```
+https://data.sfgov.org/Geographic-Locations-and-Boundaries/SF-Find-Neighborhoods/pty2-tcw4
+```
+* Save the neighborhoods CSV file into a `data` folder and name it: 
+```
+SFFind_Neighborhoods.csv
 ```
 
 * Set up the database:
