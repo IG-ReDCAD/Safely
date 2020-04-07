@@ -89,6 +89,12 @@ export MY_PHONE="YOUR_PHONE_NUMBER_HERE"
 ```
 source secrets.sh
 ```
+* Create an empty database called crimeData and use crimeData.sql to populate it:
+```
+createdb crimeData
+psql crimeData < crimeData.sql
+```
+<!-- 
 * Download the SF crimes CSV file:
 ```
 https://data.sfgov.org/Public-Safety/Police-Department-Incident-Reports-2018-to-Present/wg3w-h783/data
@@ -113,7 +119,7 @@ createdb crimeData
 python3 model.py
 python3 queryData.py
 ```
-
+-->
 * Run the app:
 
 ```
