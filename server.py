@@ -4,6 +4,7 @@ from os import environ
 import sys
 import numpy as np
 import pandas as pd
+import random
 
 from jinja2 import StrictUndefined
 from flask import Flask, flash, render_template, jsonify, send_from_directory, request, request_finished, make_response,  flash, redirect, session
@@ -21,8 +22,6 @@ import urllib.request
 
 # Download the helper library from https://www.twilio.com/docs/python/install
 from twilio.rest import Client
-
-import random
 
 from shapely.geometry import Point, Polygon
 from pyshorteners import Shortener 
@@ -140,7 +139,7 @@ def view_crimes_per_neighborhood():
 def view_mapNeigh():
     """Show the map for different neighborhoods in the neighborhoods page
     """
-    api_key=environ.get('API_KEY')
+    api_key = environ.get('API_KEY')
 
     return render_template("mapNeigh.html", api_key=api_key)
 
@@ -149,8 +148,8 @@ def getNeigh():
     """get the list of neigh in SF"""
 
     neigh_id = request.form.get("neigh_id")
-    neigh=Neighborhood.query.filter(Neighborhood.neigh_id==neigh_id).first()
-    dic_crimes=neigh.get_coordinates_by_category()
+    neigh = Neighborhood.query.filter(Neighborhood.neigh_id == neigh_id).first()
+    dic_crimes = neigh.get_coordinates_by_category()
 
     return jsonify(dic_crimes)
 
@@ -164,22 +163,22 @@ def getcat():
     session["neigh_id"]=neigh_id
     session["cat_name"]=cat_name
 
-    cat = Category.query.filter(Category.category_name==cat_name).first()
-    crimes=Crime.query.filter((Crime.neighborhood_id==neigh_id) & (Crime.category_id==cat.category_id)).all()
+    cat = Category.query.filter(Category.category_name == cat_name).first()
+    crimes = Crime.query.filter((Crime.neighborhood_id == neigh_id) & (Crime.category_id==cat.category_id)).all()
 
-    xy_dic={}
+    xy_dic = {}
     for crime in crimes:
         # 2019/09/30 , 2019/10/02
         date=crime.crime_date
         year=date[:4]
         month=int(date[5:7])
 
-        if year== '2019':
-            month=month+12
+        if year == '2019':
+            month = month + 12
         if month in xy_dic:
-            xy_dic[month]+=1
+            xy_dic[month] += 1
         else:
-            xy_dic[month]=1
+            xy_dic[month] = 1
 
     return jsonify(xy_dic)
 
@@ -188,10 +187,10 @@ def getcat():
 def view_frame_Neigh():
     """show the neighborhoods page and return the list of neighborhoods
     """
-    logged_user=checkuser()
+    logged_user = checkuser()
 
-    list_neigh=[]
-    neigh=db.session.query(Neighborhood.neigh_id,Neighborhood.neigh_name).all()
+    list_neigh = []
+    neigh = db.session.query(Neighborhood.neigh_id,Neighborhood.neigh_name).all()
     for eachneigh in neigh:
         list_neigh.append({eachneigh[0]:eachneigh[1]})
 
@@ -206,28 +205,36 @@ def get_neigh():
     data = pd.read_csv("data/SFFind_Neighborhoods.csv") 
     # data = data.dropna()
     df = pd.DataFrame(data)
-    total_rows=len(df.axes[0])
-    total_cols=len(df.axes[1])
+    total_rows = len(df.axes[0])
+    total_cols = len(df.axes[1])
 
-    json_neigh_coordinates=[]
+    json_neigh_coordinates = []
     control = 0
 
     # count the number of crimes:
-    total_crimes=db.session.query(Crime).count()
+    total_crimes = db.session.query(Crime).count()
     # 190644
 
+    # in this route I calculated the category of each neighborhood.
+    # I calculated for each neighborhood the sum of the crimes that are inside that polygone (neighborhood coordinates got fron the csv file)
+    # Then, I associated a category based on that sum.
+    # looking for a category for each neighborhood (the code in in this route as a comment) took time to execute and since the result is static,
+    # I just saved the result in a dic_category of a key: neighborhood name and a value: category number.
+
+    # dic_category = {'Seacliff':'2','Lake Street':'1', 'Presidio National Park':'2', 'Presidio Terrace':'3', 'Inner Richmond': '5', 'Sutro Heights': '4','Lincoln Park / Ft. Miley':'1', 'Outer Richmond':'5', 'Golden Gate Park':'4', 'Presidio Heights':'3', 'Laurel Heights / Jordan Park':'3', 'Lone Mountain':'3', 'Anza Vista':'3', 'Cow Hollow':'3', 'Union Street':'4', 'Nob Hill':'5', 'Marina':'5', 'Telegraph Hill':'4', 'Downtown / Union Square':'8', 'Tenderloin':'8', 'Civic Center':'7', 'Hayes Valley':'4', '4', '3', '4', '4', '3', '4', '3', '4', '4', '8', '4', '4', '0', '3', '5', '4', '5', '4', '4', '3', '3', '3', '3', '3', '2', '2', '2', '6', '3', '4', '8', '5', '4', '3', '3', '3', '3', '3', '3', '3', '1', '3', '3', '3', '3', '1', '1', '1', '3', '3', '1', '3', '4', '2', '5', '4', '3', '4', '3', '3', '5', '4', '3', '5', '4', '4', '3', '4', '5', '3', '3', '3', '3', '3', '5', '4', '6', '5', '5', '5', '4', '5', '4', '5', '5', '6', '4', '3', '2', '3', '3', '3', '3', '2', '1'}
+
     for num_row in range(total_rows):
-        dicN={}
-        dic_neigh={}
-        list_coordinates=[]
-        list_lat=[]
-        list_lng=[]
-        poly=[]
-        geom=data.iloc[num_row]["the_geom"].split(',')
+        dicN = {}
+        dic_neigh = {}
+        list_coordinates = []
+        list_lat = []
+        list_lng = []
+        poly = []
+        geom = data.iloc[num_row]["the_geom"].split(',')
         for index in range(len(geom)):
             # cleaning the data
-            if index==0:
-                num_crimes=0
+            if index == 0:
+                num_crimes = 0
                 coordinates = ((str(geom[index]).strip()).replace('MULTIPOLYGON (((','')).split(" ")
             else:
                 coordinates = (str(geom[index]).strip()).split(" ")
@@ -242,21 +249,25 @@ def get_neigh():
             list_lat.append(c['lat'])
             list_lng.append(c['lng'])
 
-        # solution: Based on the plygon and crime data in the data base, return the name of the neigh and the count the number of crimes
+        # # solution: Based on the plygon and crime data in the data base, return the name of the neigh and the count the number of crimes
+        # # exp: Seacliff, 144
         # crimes=db.session.query(Crime.latitude, Crime.longitude).all()
         # for crime in crimes:
         #     coor_inside = checkPolygon(poly, (crime.latitude, crime.longitude))
-        #     if coor_inside==True:
-        #         num_crimes+=1
-        # avg_crimes=num_crimes/total_crimes
-        # pred_category=getScore_neighborhood(avg_crimes)
-        # dic_neigh["cat"]=str(pred_category)
-        # dic_neigh["num_crimes"]=num_crimes
+        #     if coor_inside == True:
+        #         num_crimes += 1
+        # avg_crimes = num_crimes/total_crimes
+        # pred_category = getScore_neighborhood(avg_crimes)
+        # dic_neigh["cat"] = str(pred_category)
+        # dic_neigh["num_crimes"] = num_crimes
 
         dic_neigh["coordinates"] = list_coordinates
+        # dic_neigh["category"] = dic_category[data.iloc[num_row][2]]
+        # 'coordinates': [{'lng': -122.45890466499992, 'lat': 37.74053522100007},..]
         dicN[data.iloc[num_row][2]] = dic_neigh
+        # [{'Seacliff': {'category':'2','coordinates': [{'lng': -122.49345526799993, 'lat': 37.78351817100008}, {'lng': -122.49372649999992, 'lat': 37.78724665100009}..]}}]
         json_neigh_coordinates.append(dicN)
-        
+
         
     return jsonify(json_neigh_coordinates)
 
@@ -270,11 +281,11 @@ def view_direction():
     - Geolocation with HTML5 navigator.geolocate API and direction API
     """
 
-    api_key= environ.get('API_KEY')
+    api_key = environ.get('API_KEY')
     user_id = session.get("user_id")
 
     if(user_id):
-        logged_user=User.query.filter_by(user_id=user_id).first()
+        logged_user = User.query.filter_by(user_id=user_id).first()
         return render_template("direction.html", user=logged_user, api_key=api_key)
     else:
         return render_template("direction.html", user="None", api_key=api_key)
@@ -284,15 +295,15 @@ def view_direction():
 def showCoordinates():
     """Show the coordinates of the crime on the map"""
 
-    cat_name=session["cat_name"]
-    neigh_id=session["neigh_id"]
+    cat_name = session["cat_name"]
+    neigh_id = session["neigh_id"]
 
-    list_lat=[]
-    list_long=[]
-    infocoordinates=[]
-    names=[]
+    list_lat = []
+    list_long = []
+    infocoordinates = []
+    names = []
     cat = Category.query.filter(Category.category_name==cat_name).first()
-    crimes=Crime.query.filter((Crime.neighborhood_id==neigh_id) & (Crime.category_id==cat.category_id)).all()
+    crimes = Crime.query.filter((Crime.neighborhood_id==neigh_id) & (Crime.category_id==cat.category_id)).all()
     for eachcrime in crimes:
         infocoordinates.append({"name":eachcrime.subcategory.subcategory_name, "coords":{"lat":eachcrime.latitude, "lng": eachcrime.longitude}, "date": eachcrime.crime_date, "time":eachcrime.crime_time, "intersection":eachcrime.intersection, "day": eachcrime.crime_day})
 
@@ -313,27 +324,21 @@ def log_in_user():
 def login_process():
     """Login process"""
 
-
+    session.clear()
     email = request.form["email"]
     password = request.form["password"]
-
     user = User.query.filter_by(email=email).first()
 
-    # I need to add flash messages here in order to show that in the html file
-    # I am going to work on this after Hackbright
     if not user:
-        print("No such user")
+        flash("No such user")
         return redirect("/login")
 
     if user.password != password:
-        print("Incorrect password")
+        flash("Incorrect password")
         return redirect("/login")
 
     session.clear()
     session["user_id"] = user.user_id
-
-    flash("Logged in")
-    print("Logged in")
 
     return redirect(f"/profile/{user.user_id}")
 
@@ -350,11 +355,11 @@ def add_user():
 def register_process():
     """Registration process."""
 
+
     email = request.form["email"]
     password = request.form["password"]
     name = request.form["name"]
     phone_num = request.form["pnum"]
-
     user = User.query.filter_by(email=email).first()
 
     if not user:
@@ -365,9 +370,6 @@ def register_process():
         
         flash("Signed in")
         return redirect("/login")
-        # else: 
-        #     print("Invalid Password !!") 
-        #     return redirect("/signin")
     else:
         flash("The user does exist already")
         return redirect("/signin")   
@@ -377,7 +379,7 @@ def logout():
     """Log out"""
 
     del session["user_id"]
-    flash("Logged Out.")
+    session.clear()
 
     return redirect("/")
 
@@ -391,24 +393,24 @@ def user_detail(user_id):
     the different categories of crimes and their sum.
     """
 
-    dic_for_each_route={}
+    dic_for_each_route = {}
 
     user = User.query.options(db.joinedload('routes')).get(user_id)
     query_sum = db.session.query(Crime.category_id, Crime.neighborhood_id, (db.func.count(Crime.crime_id)).label('crime_count')).group_by(Crime.category_id, Crime.neighborhood_id)
 
-    dic_cat_sum={}
+    dic_cat_sum = {}
     for eachroute in user.routes:
-        list_id=[]
-        list_neigh=eachroute.neighborhoods
+        list_id = []
+        list_neigh = eachroute.neighborhoods
         for eachneigh in list_neigh:
             list_id.append(eachneigh.neigh_id)
         
         query_neigh_cat = query_sum.filter(Crime.neighborhood_id.in_(list_id)).all()
 
         # group by category the sum of the crimes: now we get the result for each route the crime sum for each categ
-        set_cat=set()
-        dic_cat={}
-        index=0
+        set_cat = set()
+        dic_cat = {}
+        index = 0
         for line in query_neigh_cat:
             set_cat.add(line.category_id)
         for cat in set_cat:
@@ -417,12 +419,11 @@ def user_detail(user_id):
                 if cat == line.category_id:
                     sum_cat += line.crime_count
             name_cat = db.session.query(Category.category_name).filter(Category.category_id == cat).all()
-            dic_cat[index]=(name_cat[0][0],sum_cat)
-            index+=1
+            dic_cat[index] = (name_cat[0][0],sum_cat)
+            index += 1
 
         dic_cat_sum[eachroute] = dic_cat
        
-
 
     return render_template("profile.html", user=user, dic=dic_cat_sum)
 
@@ -454,7 +455,7 @@ def route_detail(user_id):
                     crimes_sum[crime_cat] += crimes_neighborhood[crime_cat]
                 else:
                     crimes_sum[crime_cat] = crimes_neighborhood[crime_cat]
-        crimes_sum_sorted={}
+        crimes_sum_sorted = {}
         for key, value in sorted(crimes_sum.items(), reverse=True,  key=lambda x: x[1]):
             crimes_sum_sorted[key]=value
             number_cat += 1
@@ -488,7 +489,7 @@ def post_neighborhood():
     list_neigh = request.form.get("list_neigh")
     list_neigh = json.loads(list_neigh)
  
-    list_neigh=list(set(list_neigh['neigh']))
+    list_neigh = list(set(list_neigh['neigh']))
 
     exist_route = Route.query.filter_by( user_id=session.get("user_id"), route_start=route_start, route_end=route_end).first()
 
@@ -508,7 +509,7 @@ def post_neighborhood():
 
         return 'The route has been added', 200
     
-    return 'The route already exists '
+    return 'The route already exists'
 
 
 # twilio api 
@@ -528,7 +529,7 @@ def send_m():
 
     # find the phone number of the user
 
-    user=User.query.filter_by(user_id=user_id).first()
+    user = User.query.filter_by(user_id=user_id).first()
     message_body = "Sorry {}, This is a warning alert—check it out!\n The holder of the phone {} is going from {} to {}.".format(user.name,user.phone_num, route_start, route_end)
 
     account_sid = environ.get("ACCOUNT_SID")
@@ -558,17 +559,17 @@ def share_link():
     link = request.form.get("link")
 
     # Create a google maps url that enables sharing the directions 
-    origin=origin.replace(" ","+")
-    destination=destination.replace(" ","+")
-    travel_mode=travel_mode.lower()
+    origin = origin.replace(" ","+")
+    destination = destination.replace(" ","+")
+    travel_mode = travel_mode.lower()
 
     shared_url = link+"&origin="+origin+"&destination="+destination+"&travelmode="+travel_mode+"&waypoints="+waypoints
     # exp: https://www.google.com/maps/dir/?api=1&origin=Pier+33+San+Francisco+ CA+USA&destination=Cable+Car+Museum+Mason+Street+San+Francisco+CA+USA&travelmode=walking&waypoints=37.8063378,-122.4054917|37.8066323,-122.4060625|37.8058092,-122.4119264|37.8011366,-122.4110618|37.8009343,-122.4127215 
 
     # find the phone number of the user
     user_id = session.get("user_id") 
-    user=User.query.filter_by(user_id=user_id).first()
-    message_body="See directions \n"+shared_url+"\n in Goggle Maps"
+    user = User.query.filter_by(user_id=user_id).first()
+    message_body = "See directions \n"+shared_url+"\n in Goggle Maps"
 
     # short url
     # url_shortener = Shortener('Google', api_key = API_Key) 
@@ -608,14 +609,14 @@ def showNeighborhood():
 
     result=Neighborhood.query.all()
 
-    neigh_list=[]
-    neigh_id_list=[]
-    lat_list=[]
-    lng_list=[]
-    count_crime_list=[]
+    neigh_list = []
+    neigh_id_list = []
+    lat_list = []
+    lng_list = []
+    count_crime_list = []
 
     for eachneigh in result:
-        querylatlng=Crime.query.filter(Crime.neighborhood_id==eachneigh.neigh_id).first()
+        querylatlng = Crime.query.filter(Crime.neighborhood_id==eachneigh.neigh_id).first()
         neigh_list.append(eachneigh.neigh_name)
         neigh_id_list.append(eachneigh.neigh_id)
         lat_list.append(querylatlng.latitude)
@@ -639,12 +640,12 @@ def showNeighborhood():
 # this route is called only one time and then I defined a function in the queryData file to update the neighborhoods names
 # based on the results given by this route (/neighc)
 
-list_neigh=[]
-listlatitude=[]
-listlongitude=[]
-number_names=[]
-name=[]
-idlist=[]
+list_neigh = []
+listlatitude = []
+listlongitude = []
+number_names = []
+name = []
+idlist = []
 
 @app.route("/neighc", methods=['POST'])
 def update_neigh():
@@ -660,11 +661,11 @@ def update_neigh():
     # latitude= 37.7181267149201
     # longitude= -122.414176324324
 
-    if len(number_names)==39:
+    if len(number_names) == 39:
         for index in range(len(number_names)):
             #get the neigh id
-            neigh=Neighborhood.query.filter(Neighborhood.neigh_id==idlist[index]).first()
-            neigh.neigh_name=name[index]
+            neigh = Neighborhood.query.filter(Neighborhood.neigh_id==idlist[index]).first()
+            neigh.neigh_name = name[index]
         db.session.commit()
 
         print("\n \n \n", "neigh updated")
@@ -672,22 +673,9 @@ def update_neigh():
     return 'OK', 200
 
 
-# @app.route("/crimes.json")
-# def getCrime():
-#     """Show the coordinates of the crime on the map"""
-
-#     crimes = Crime.query.all()
-#     coordinates = []
-#     for crime in crimes:
-#         coordinates.append({'latitude': crime.latitude,
-#                             'longitude': crime.longitude})
-        
-#     return jsonify(coordinates)
-
-
-
 if __name__ == "__main__":
     app.debug = True
     connect_to_db(app)
     app.app_context().push()
+    # app.run()
     app.run(host="0.0.0.0")
