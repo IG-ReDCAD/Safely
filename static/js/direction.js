@@ -74,7 +74,7 @@ async function calcultateScore(routes) {
             list_y.push(lngc);
             let neigh_name = await checkNeigh(key, latc, lngc);
             if (neigh_name != null) {
-                //find the count_crime for the neighborhood name found
+                //find the count_crime for the name of the neighborhood
                 let count_crime = findCountCrime(json_neigh, neigh_name);
                 list_route_neigh.push(neigh_name);
                 score = score + count_crime;
@@ -119,7 +119,6 @@ function sort_score(scores) {
     let sorted_list = list_score.sort((a, b) => a - b);
     return sorted_list;
 }
-
 
 var map;
 

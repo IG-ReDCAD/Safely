@@ -12,7 +12,6 @@ function changeNeigh() {
     $.post('/selectNeigh', {
         "neigh_id": selectedValue
     }, (res) => {
-        console.log(res)
         keys = Object.keys(res)
         const divcat = $('<div id="div-cat"></div>')
         const label = $("<br><label> </label>")
@@ -33,19 +32,14 @@ function changeCat() {
     const category = document.getElementById("cat");
     const selectedcat = category.options[category.selectedIndex].value;
     const namecat = $("#cat option:selected").html();
-    console.log(selectedcat)
-    console.log("namecat" + namecat)
     const selectBox = document.getElementById("neighs");
     const selectedValue = selectBox.options[selectBox.selectedIndex].value;
     $.post('/selectcat', {
         "neigh_id": selectedValue
         , "cat_name": namecat
     }, (res) => {
-        console.log(res)
         const list_x = Object.keys(res);
         const list_y = Object.values(res);
-        console.log(list_x)
-        console.log(list_y)
         const chartDiv = $('#div-chart');
         const canvas = $('<canvas style="display: block; width: 509px; height: 254px;" width="509" height="254" class="chartjs-render-monitor"></canvas>');
         chartDiv.append(canvas);
