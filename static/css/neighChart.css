@@ -1,0 +1,44 @@
+h2{
+    margin-top: 30px;
+}
+#safest{
+    margin-top: 50px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.colorB {
+    width: 40px;
+    height: 20px;
+    float:left;
+}
+.mapframe {
+    height:800px;
+    width:140%;
+}
+.cat0 {
+    background: #e5f5e0;
+}
+.cat1 {
+    background: #f7fcb9;
+}
+.cat2 {
+    background: #ffeda0;
+}
+.cat3 {
+    background: #feb24c;
+}
+.cat4 {
+    background: #fdae6b;
+}
+.cat5 {
+    background: #fc9272;
+}
+.cat6 {
+    background: #f03b20;
+}
+.cat7 {
+    background: #e6550d;
+}
+.cat8 {
+    background: #de2d26;
+}
