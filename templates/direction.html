@@ -1,62 +1,52 @@
 {% extends 'base.html' %}
- {% block head %}
-  <style>
-    body {
-      background-color: #F0F8FF;
-    }
-  </style>
- {% endblock %}
-
+{% block head %}
+<link rel="stylesheet" href="/static/css/direction.css">
+{% endblock %}
 {% block body %}
-
-  <div class="container map-wrapper">
-    <div>
-      <input id="origin-input" class="controls" type="text"
-          placeholder="Enter an origin location">
-      <input id="destination-input" class="controls" type="text"
-          placeholder="Enter a destination location">
-    </div>
-    <div id="mode-selector" class="controls">
-      <input type="radio" name="type" id="changemode-walking" value="Walking" checked="checked">
-      <label for="changemode-walking">Walking</label>
-      <input type="radio" name="type" id="changemode-driving" value="Driving">
-      <label for="changemode-driving">Driving</label>
+<div class="container map-wrapper">
+  <div>
+    <input id="origin-input" class="controls" type="text"
+    placeholder="Enter an origin location">
+    <input id="destination-input" class="controls" type="text"
+    placeholder="Enter a destination location">
+  </div>
+  <div id="mode-selector" class="controls">
+    <input type="radio" name="type" id="changemode-walking" value="Walking" checked="checked">
+    <label for="changemode-walking">Walking</label>
+    <input type="radio" name="type" id="changemode-driving" value="Driving">
+    <label for="changemode-driving">Driving</label>
+  </div>
+</div>
+<div id="map"></div>
+<div class="container">
+  <div class="row">
+    <div class="col" id="select-route">
+      <table>
+        <tr>
+          <th id="first" style="display: none">
+            <label> Select a Route</label><br>
+            <button type="button" class="btn btn-success sizeB" id="firstb">The safest Route</button>
+          </th>
+          <th id="second" style="display: none">
+            <button type="button" class="btn btn-primary sizeB" id="secondb">The second Route</button>
+          </th>
+          <th id="third" style="display: none">
+            <button type="button" class="btn btn-danger sizeB" id="thirdb">The worst route </button>
+          </th>
+        </tr>
+      </table>
+    </div>    
+    <div class="col" id="add-route-section">
+      <label><b> Add a Route</b></label>
+      <input id="name-route" type="text" placeholder="give a name to your route" >
+      <button type="button" class="btn" id="addRoute"><i class="fas fa-save"></i></button>
+      <button id="share" class="btn"><i class="fas fa-share-alt"></i></button>
+      <button type="button" class="btn" id="refresh"><i class="fa fa-refresh"></i> </button>
     </div>
   </div>
- 
-  <div id="map"></div>
-  <div class="container">
-    <div class="row">
-      <div class="col" id="select-route">
-        <table>
-          <tr>
-            <th id="first" style="display: none">
-              <label> Select a Route</label><br>
-              <button type="button" class="btn btn-success sizeB" id="firstb">The safest Route</button>
-            </th>
-            <th id="second" style="display: none">
-              <button type="button" class="btn btn-primary sizeB" id="secondb">The second Route</button>
-            </th>
-            <th id="third" style="display: none">
-              <button type="button" class="btn btn-danger sizeB" id="thirdb">The worst route </button>
-            </th>
-          </tr>
-        </table>
-      </div>    
-      <div class="col" id="add-route-section">
-        <label><b> Add a Route</b></label>
-        <input id="name-route" type="text" placeholder="give a name to your route" >
-        <button type="button" class="btn" id="addRoute"><i class="fas fa-save"></i></button>
-        <button id="share" class="btn"><i class="fas fa-share-alt"></i></button>
-        <button type="button" class="btn" id="refresh"><i class="fa fa-refresh"></i> </button>
-      </div>
-    </div>
-  </div>
-  <script src="/static/js/direction.js"></script>
-  <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=places&callback=initMap">
-  </script>
-
- <!-- {{ api_key }} -->
-
+</div>
+<script src="/static/js/direction.js"></script>
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=places&callback=initMap">
+</script>
 {% endblock %}
