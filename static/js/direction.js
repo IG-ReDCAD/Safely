@@ -84,8 +84,7 @@ async function calcultateScore(routes) {
         //check the numberof crimes total to get the pcg or the number of coordinates
         score = score / numbercoordinates;
         list_neighborhood.push(list_route_neigh);
-        console.log(score, routes[index]);
-        //list_score.push({"route":routes[0],"score":score});
+        //list_score.push({"route":routes[0],"score":score,"x":[,,],"y":[,,]})
         score_list.push({
             "route": routes[index],
             "score": score,
@@ -93,7 +92,6 @@ async function calcultateScore(routes) {
             "y": list_y
         });
     }
-    console.log(list_neighborhood);
     return score_list;
 }
 
@@ -108,9 +106,7 @@ function calculateminScore(scores) {
             min_index = index;
         }
     }
-    console.log("min", min_score);
     best_list_neigh = list_neighborhood[min_index];
-    console.log("best list neigh", best_list_neigh);
     return min_score;
 }
 
@@ -121,7 +117,6 @@ function sort_score(scores) {
     }
 
     let sorted_list = list_score.sort((a, b) => a - b);
-    console.log(sorted_list)
     return sorted_list;
 }
 
@@ -231,7 +226,6 @@ AutocompleteDirectionsHandler.prototype.route = function() {
         async function(response, status) {
             if (status === 'OK') {
                 //calculate the score of each route
-                console.log(response);
                 let scores = await calcultateScore(response.routes);
                 console.log("scores", scores);
 
@@ -248,7 +242,6 @@ AutocompleteDirectionsHandler.prototype.route = function() {
                 for (let i = 0, len1 = sorted_scores.length; i < len1; i++) {
                     for (let j = 0, len2 = scores.length; j < len2; j++) {
                         if (sorted_scores[i] === scores[j].score) {
-                            console.log("route", list_div[i], sorted_scores[i], scores[j].score)
                             this.directionsRenderer = new google.maps.DirectionsRenderer({
                                 map: this.map,
                                 directions: response,
@@ -291,7 +284,6 @@ $("#addRoute").on("click", (evt) => {
             "neigh": best_list_neigh
         })
     };
-    console.log(formInputs);
 
     $.post('/addRoute', formInputs, (res) => {
         alert(res);
@@ -331,7 +323,6 @@ $("#firstb").on("click", (evt) => {
             selected_index_route = 1;
         }
     }
-    console.log(selected_score);
     notify_user_high_crime_route(selected_score);
 });
 
@@ -360,16 +351,13 @@ $("#thirdb").on("click", (evt) => {
             selected_index_route = 3;
         }
     }
-    console.log(selected_score)
     notify_user_high_crime_route(selected_score);
 });
 
-// Share button: share the directions on the phone
+// a share button: share the directions on the phone
 $("#share").on("click", (evt) => {
     evt.preventDefault();
     const index = selected_index_route - 1;
-    console.log(index)
-    console.log(list_directionRender[index])
 
     let waypoints = '';
     const link = 'https://www.google.com/maps/dir/?api=1'
@@ -388,7 +376,6 @@ $("#share").on("click", (evt) => {
         'waypoints': waypoints,
         'link': link
     };
-    console.log(formInputs);
     $.post('/shareLink', formInputs, (res) => {
         alert("A message has been sent " + res);
     });
