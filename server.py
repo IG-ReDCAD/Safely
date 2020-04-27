@@ -5,6 +5,7 @@ import sys
 import numpy as np
 import pandas as pd
 import random
+import re 
 
 from jinja2 import StrictUndefined
 from flask import Flask, flash, render_template, jsonify, send_from_directory, request, request_finished, make_response,  flash, redirect, session
@@ -93,11 +94,11 @@ def password_verif(passwd):
     value = True
       
     if len(passwd) < 6: 
-        flash('length should be at least 6') 
+        flash('length of the password should be at least 6') 
         value = False
           
     if len(passwd) > 20: 
-        flash('length should be not be greater than 8') 
+        flash('length of the password should be not greater than 20') 
         value = False
           
     if not any(char.isdigit() for char in passwd): 
@@ -117,6 +118,23 @@ def password_verif(passwd):
         value = False
     if value: 
         return value 
+
+
+def phone_verif(phone_num):
+    """Check if the phone number is valid"""
+
+    value = True
+    if phone_num[0:1] == '+':
+        for char in phone_num[1:]:
+            if not char.isdigit(): 
+                flash('Please enter + then a set of digits') 
+                value = False
+    else:
+        flash('Please enter + then a set of digits') 
+        value = False
+    
+    return value
+
 
 
 @app.route("/")
@@ -221,7 +239,7 @@ def get_neigh():
     # looking for a category for each neighborhood (the code in in this route as a comment) took time to execute and since the result is static,
     # I just saved the result in a dic_category of a key: neighborhood name and a value: category number.
 
-    # dic_category = {'Seacliff':'2','Lake Street':'1', 'Presidio National Park':'2', 'Presidio Terrace':'3', 'Inner Richmond': '5', 'Sutro Heights': '4','Lincoln Park / Ft. Miley':'1', 'Outer Richmond':'5', 'Golden Gate Park':'4', 'Presidio Heights':'3', 'Laurel Heights / Jordan Park':'3', 'Lone Mountain':'3', 'Anza Vista':'3', 'Cow Hollow':'3', 'Union Street':'4', 'Nob Hill':'5', 'Marina':'5', 'Telegraph Hill':'4', 'Downtown / Union Square':'8', 'Tenderloin':'8', 'Civic Center':'7', 'Hayes Valley':'4', '4', '3', '4', '4', '3', '4', '3', '4', '4', '8', '4', '4', '0', '3', '5', '4', '5', '4', '4', '3', '3', '3', '3', '3', '2', '2', '2', '6', '3', '4', '8', '5', '4', '3', '3', '3', '3', '3', '3', '3', '1', '3', '3', '3', '3', '1', '1', '1', '3', '3', '1', '3', '4', '2', '5', '4', '3', '4', '3', '3', '5', '4', '3', '5', '4', '4', '3', '4', '5', '3', '3', '3', '3', '3', '5', '4', '6', '5', '5', '5', '4', '5', '4', '5', '5', '6', '4', '3', '2', '3', '3', '3', '3', '2', '1'}
+    # dic_category = {'Seacliff':'2','Lake Street':'1', 'Presidio National Park':'2', 'Presidio Terrace':'3', 'Inner Richmond': '5', 'Sutro Heights': '4','Lincoln Park / Ft. Miley':'1', 'Outer Richmond':'5', 'Golden Gate Park':'4', 'Presidio Heights':'3', 'Laurel Heights / Jordan Park':'3', 'Lone Mountain':'3', 'Anza Vista':'3', 'Cow Hollow':'3', 'Union Street':'4', 'Nob Hill':'5', 'Marina':'5', 'Telegraph Hill':'4', 'Downtown / Union Square':'8', 'Tenderloin':'8', 'Civic Center':'7', 'Hayes Valley':'4', 'Alamo Square':'4', 'Panhandle':'3', 'Haight Ashbury':'4', 'Lower Haight':'4', 'Mint Hill':'3', 'Duboce Triangle':'4', 'Cole Valley':'3', 'Rincon Hill':'4', 'South Beach':'4', 'South of Market':'8', 'Showplace Square':'4', 'Mission Bay':'4', 'Yerba Buena Island':'0', 'Treasure Island':'3', 'Mission Dolores':'5', 'Castro':'4', 'Outer Sunset':'5', 'Parkside':'4', 'Stonestown':'4', '3', '3', '3', '3', '3', '2', '2', '2', '6', '3', '4', '8', '5', '4', '3', '3', '3', '3', '3', '3', '3', '1', '3', '3', '3', '3', '1', '1', '1', '3', '3', '1', '3', '4', '2', '5', '4', '3', '4', '3', '3', '5', '4', '3', '5', '4', '4', '3', '4', '5', '3', '3', '3', '3', '3', '5', '4', '6', '5', '5', '5', '4', '5', '4', '5', '5', '6', '4', '3', '2', '3', '3', '3', '3', '2', '1'}
 
     for num_row in range(total_rows):
         dicN = {}
@@ -349,30 +367,36 @@ def add_user():
 
     return render_template("signin.html", user="None")
 
-# sign up
-# After Hackbright: going to work on Flash messages.
 @app.route('/signin', methods=['POST'])
 def register_process():
     """Registration process."""
 
 
-    email = request.form["email"]
-    password = request.form["password"]
     name = request.form["name"]
-    phone_num = request.form["pnum"]
+    email = "".join((request.form["email"]).split()) 
+    password = request.form["password"]
+    phone_num = "".join((request.form["pnum"]).split())
     user = User.query.filter_by(email=email).first()
 
     if not user:
-        # if (password_verif(password)): 
-        new_user = User(name=name, email=email, password=password, phone_num=phone_num)
-        db.session.add(new_user)
-        db.session.commit()
-        
-        flash("Signed in")
-        return redirect("/login")
+        if name != "":
+            if '@' in email:
+                password_value = password_verif(password)
+                if password_value is True:
+                    phone_value = phone_verif(phone_num)
+                    if phone_value is True:
+                        new_user = User(name=name, email=email, password=password, phone_num=phone_num)
+                        db.session.add(new_user)
+                        db.session.commit()
+                        return redirect("/login")
+            else:
+                flash("Please enter a valid email")
+        else:
+            flash("Please enter a valid name")           
     else:
-        flash("The user does exist already")
-        return redirect("/signin")   
+        flash("The user does exist already") 
+
+    return redirect("/signin")    
 
 @app.route('/logout')
 def logout():
