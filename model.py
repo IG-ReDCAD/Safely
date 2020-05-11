@@ -14,7 +14,6 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
-
 class Category(db.Model):
     """Data model for a category."""
 
@@ -47,7 +46,6 @@ class Neighborhood(db.Model):
     count_crime = db.Column(db.Integer, nullable = False)
 
     crimes = db.relationship('Crime', backref='neighborhood')
-
 
 
     def get_crimes_by_category(self):
