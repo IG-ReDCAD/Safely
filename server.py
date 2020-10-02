@@ -6,31 +6,22 @@ import numpy as np
 import pandas as pd
 import random
 import re 
-
 from jinja2 import StrictUndefined
 from flask import Flask, flash, render_template, jsonify, send_from_directory, request, request_finished, make_response,  flash, redirect, session
 from flask_debugtoolbar import DebugToolbarExtension
 import json
-
 from model import db, Crime, Category, Resolution, Neighborhood, Subcategory, User, Route, connect_to_db
 from sqlalchemy import func, update
 from threading import Timer
-
 import requests
-
 import urllib.parse
 import urllib.request
-
-# Download the helper library from https://www.twilio.com/docs/python/install
 from twilio.rest import Client
-
 from shapely.geometry import Point, Polygon
 from pyshorteners import Shortener 
 
 
 app = Flask(__name__)
-
-#---------------------------------------------------------------------#
 app.secret_key = "ABC"
 app.jinja_env.undefined = StrictUndefined
 
@@ -86,10 +77,7 @@ def getScore_neighborhood(avg_crimes):
 
     return pred_category
 
-# Function to validate the password. This function needs to be added to the route signin
-# After Hackbright: I am going to work on the Flash messages.
 def password_verif(passwd): 
-      
     Specialchar ={'$', '@', '#', '%'}
     value = True
       
@@ -136,7 +124,6 @@ def phone_verif(phone_num):
     return value
 
 
-
 @app.route("/")
 def index():
     """Show homepage."""
@@ -148,7 +135,6 @@ def index():
 def view_crimes_per_neighborhood():
     """Show the map for different categories of crime in the neighborhoods page
     """
-
     api_key=environ.get('API_KEY')
 
     return render_template("dropmarkers.html", user=checkuser(), api_key=api_key)
@@ -164,7 +150,7 @@ def view_mapNeigh():
 @app.route("/selectNeigh", methods = ["POST"])
 def getNeigh():
     """get the list of neigh in SF"""
-
+    
     neigh_id = request.form.get("neigh_id")
     neigh = Neighborhood.query.filter(Neighborhood.neigh_id == neigh_id).first()
     dic_crimes = neigh.get_coordinates_by_category()
