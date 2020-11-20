@@ -20,13 +20,13 @@ from twilio.rest import Client
 from shapely.geometry import Point, Polygon
 from pyshorteners import Shortener 
 
-
 app = Flask(__name__)
 app.secret_key = "ABC"
 app.jinja_env.undefined = StrictUndefined
 
 def checkuser():
     """check if the user if logged in already"""
+    
     user_id = session.get("user_id") 
 
     if(user_id!=None):
@@ -39,6 +39,7 @@ def checkuser():
 
 def checkPolygon(poly, p):
     """check polygone"""
+    
     point=Point(p)
     polygone = Polygon(poly)
 
@@ -46,6 +47,8 @@ def checkPolygon(poly, p):
 
 
 def getScore_neighborhood(avg_crimes):
+    """Calculate score for each neighborhood"""
+    
     pred_category=0
 
     if(avg_crimes<0.0001):
@@ -77,7 +80,9 @@ def getScore_neighborhood(avg_crimes):
 
     return pred_category
 
-def password_verif(passwd): 
+def password_verif(passwd):
+    """verify the password"""
+    
     Specialchar ={'$', '@', '#', '%'}
     value = True
       
@@ -135,14 +140,17 @@ def index():
 def view_crimes_per_neighborhood():
     """Show the map for different categories of crime in the neighborhoods page
     """
+    
     api_key=environ.get('API_KEY')
 
     return render_template("dropmarkers.html", user=checkuser(), api_key=api_key)
+
 
 @app.route("/mapNeigh")
 def view_mapNeigh():
     """Show the map for different neighborhoods in the neighborhoods page
     """
+    
     api_key = environ.get('API_KEY')
 
     return render_template("mapNeigh.html", api_key=api_key)
@@ -191,6 +199,7 @@ def getcat():
 def view_frame_Neigh():
     """show the neighborhoods page and return the list of neighborhoods
     """
+    
     logged_user = checkuser()
 
     list_neigh = []
@@ -205,9 +214,8 @@ def view_frame_Neigh():
 def get_neigh():
     """show the different neighborhoods on the map, by calculating the score of each one.
     """
-    # Read data from file 
+    
     data = pd.read_csv("data/SFFind_Neighborhoods.csv") 
-    # data = data.dropna()
     df = pd.DataFrame(data)
     total_rows = len(df.axes[0])
     total_cols = len(df.axes[1])
@@ -215,18 +223,9 @@ def get_neigh():
     json_neigh_coordinates = []
     control = 0
 
-    # count the number of crimes:
+    # count the number of crimes: exp 190644
     total_crimes = db.session.query(Crime).count()
-    # 190644
-
-    # in this route I calculated the category of each neighborhood.
-    # I calculated for each neighborhood the sum of the crimes that are inside that polygone (neighborhood coordinates got fron the csv file)
-    # Then, I associated a category based on that sum.
-    # looking for a category for each neighborhood (the code in in this route as a comment) took time to execute and since the result is static,
-    # I just saved the result in a dic_category of a key: neighborhood name and a value: category number.
-
-    # dic_category = {'Seacliff':'2','Lake Street':'1', 'Presidio National Park':'2', 'Presidio Terrace':'3', 'Inner Richmond': '5', 'Sutro Heights': '4','Lincoln Park / Ft. Miley':'1', 'Outer Richmond':'5', 'Golden Gate Park':'4', 'Presidio Heights':'3', 'Laurel Heights / Jordan Park':'3', 'Lone Mountain':'3', 'Anza Vista':'3', 'Cow Hollow':'3', 'Union Street':'4', 'Nob Hill':'5', 'Marina':'5', 'Telegraph Hill':'4', 'Downtown / Union Square':'8', 'Tenderloin':'8', 'Civic Center':'7', 'Hayes Valley':'4', 'Alamo Square':'4', 'Panhandle':'3', 'Haight Ashbury':'4', 'Lower Haight':'4', 'Mint Hill':'3', 'Duboce Triangle':'4', 'Cole Valley':'3', 'Rincon Hill':'4', 'South Beach':'4', 'South of Market':'8', 'Showplace Square':'4', 'Mission Bay':'4', 'Yerba Buena Island':'0', 'Treasure Island':'3', 'Mission Dolores':'5', 'Castro':'4', 'Outer Sunset':'5', 'Parkside':'4', 'Stonestown':'4', '3', '3', '3', '3', '3', '2', '2', '2', '6', '3', '4', '8', '5', '4', '3', '3', '3', '3', '3', '3', '3', '1', '3', '3', '3', '3', '1', '1', '1', '3', '3', '1', '3', '4', '2', '5', '4', '3', '4', '3', '3', '5', '4', '3', '5', '4', '4', '3', '4', '5', '3', '3', '3', '3', '3', '5', '4', '6', '5', '5', '5', '4', '5', '4', '5', '5', '6', '4', '3', '2', '3', '3', '3', '3', '2', '1'}
-
+    
     for num_row in range(total_rows):
         dicN = {}
         dic_neigh = {}
@@ -253,26 +252,12 @@ def get_neigh():
             list_lat.append(c['lat'])
             list_lng.append(c['lng'])
 
-        # # solution: Based on the plygon and crime data in the data base, return the name of the neigh and the count the number of crimes
-        # # exp: Seacliff, 144
-        # crimes=db.session.query(Crime.latitude, Crime.longitude).all()
-        # for crime in crimes:
-        #     coor_inside = checkPolygon(poly, (crime.latitude, crime.longitude))
-        #     if coor_inside == True:
-        #         num_crimes += 1
-        # avg_crimes = num_crimes/total_crimes
-        # pred_category = getScore_neighborhood(avg_crimes)
-        # dic_neigh["cat"] = str(pred_category)
-        # dic_neigh["num_crimes"] = num_crimes
-
         dic_neigh["coordinates"] = list_coordinates
-        # dic_neigh["category"] = dic_category[data.iloc[num_row][2]]
         # 'coordinates': [{'lng': -122.45890466499992, 'lat': 37.74053522100007},..]
         dicN[data.iloc[num_row][2]] = dic_neigh
         # [{'Seacliff': {'category':'2','coordinates': [{'lng': -122.49345526799993, 'lat': 37.78351817100008}, {'lng': -122.49372649999992, 'lat': 37.78724665100009}..]}}]
         json_neigh_coordinates.append(dicN)
 
-        
     return jsonify(json_neigh_coordinates)
 
 
@@ -346,7 +331,7 @@ def login_process():
 
     return redirect(f"/profile/{user.user_id}")
 
-# sign up
+
 @app.route("/signin", methods=['GET'])
 def add_user():
     """add user"""
@@ -356,7 +341,6 @@ def add_user():
 @app.route('/signin', methods=['POST'])
 def register_process():
     """Registration process."""
-
 
     name = request.form["name"]
     email = "".join((request.form["email"]).split()) 
@@ -438,7 +422,6 @@ def user_detail(user_id):
     return render_template("profile.html", user=user, dic=dic_cat_sum)
 
 
-
 @app.route("/chart.json/<int:user_id>")
 def route_detail(user_id):
     """Show info about user."""
@@ -514,7 +497,6 @@ def post_neighborhood():
                 # add the neigh route 
                 new_route.neighborhoods.append(neigh)
 
-        
         db.session.commit()
 
         return 'The route has been added', 200
@@ -531,14 +513,12 @@ def send_m():
     route_end = request.form.get("end_address")
     score = request.form.get("score")
 
-
     # get the msg
     msg = request.form.get("msg")
     user_id = session.get("user_id")
   
 
     # find the phone number of the user
-
     user = User.query.filter_by(user_id=user_id).first()
     message_body = "Sorry {}, This is a warning alert—check it out!\n The holder of the phone {} is going from {} to {}.".format(user.name,user.phone_num, route_start, route_end)
 
@@ -573,27 +553,19 @@ def share_link():
     destination = destination.replace(" ","+")
     travel_mode = travel_mode.lower()
 
-    shared_url = link+"&origin="+origin+"&destination="+destination+"&travelmode="+travel_mode+"&waypoints="+waypoints
     # exp: https://www.google.com/maps/dir/?api=1&origin=Pier+33+San+Francisco+ CA+USA&destination=Cable+Car+Museum+Mason+Street+San+Francisco+CA+USA&travelmode=walking&waypoints=37.8063378,-122.4054917|37.8066323,-122.4060625|37.8058092,-122.4119264|37.8011366,-122.4110618|37.8009343,-122.4127215 
-
+    shared_url = link+"&origin="+origin+"&destination="+destination+"&travelmode="+travel_mode+"&waypoints="+waypoints
+    
     # find the phone number of the user
     user_id = session.get("user_id") 
     user = User.query.filter_by(user_id=user_id).first()
     message_body = "See directions \n"+shared_url+"\n in Goggle Maps"
 
-    # short url
-    # url_shortener = Shortener('Google', api_key = API_Key) 
-    # print ("Short URL is {}".format(url_shortener.short(shared_url))) 
-   
-    # Your Account Sid and Auth Token from twilio.com/console
-    # DANGER! This is insecure. See http://twil.io/secure
     account_sid = environ.get("ACCOUNT_SID")
     auth_token = environ.get("AUTH_TOKEN")
     my_phone = environ.get("MY_PHONE")
 
-
     client = Client(account_sid, auth_token)
-
     message = client.messages \
                     .create(
                         body=message_body,
@@ -602,17 +574,15 @@ def share_link():
                      )
 
     return message_body
-    # 'OK', 200
 
 
-# route for the geocoding page that checks every neigh in the data base to get how it is called in google maps
 @app.route("/neighgeocode")
 def geocode_test_neigh():
     """view neigh page"""
     
     return render_template("geocodeNeigh.html")
 
-# route for the reverse geocoding of the neighborhoods to get the all the neigh in the database.
+# reverse geocoding of the neighborhoods to get the all the neigh in the database.
 @app.route("/neighcoordinates.json")
 def showNeighborhood():
     """Show the coordinates of the crime for each selected neighborhood on the map"""
@@ -632,8 +602,7 @@ def showNeighborhood():
         lat_list.append(querylatlng.latitude)
         lng_list.append(querylatlng.longitude)
         count_crime_list.append(eachneigh.count_crime)
-        
-        
+             
     neigh_dic = {
         "name":neigh_list,
         "id":neigh_id_list,
@@ -642,6 +611,7 @@ def showNeighborhood():
         "count_crime":count_crime_list,
         "api_key":environ.get("API_KEY")
     }
+       
         
     return jsonify(neigh_dic)
     
@@ -649,7 +619,6 @@ def showNeighborhood():
 # in order to update the data base
 # this route is called only one time and then I defined a function in the queryData file to update the neighborhoods names
 # based on the results given by this route (/neighc)
-
 list_neigh = []
 listlatitude = []
 listlongitude = []
@@ -667,18 +636,13 @@ def update_neigh():
     number_names.append(int(request.form.get('number')))
     idlist.append(int(request.form.get('id')))
 
-    # name= "Visitacion Valley"
-    # latitude= 37.7181267149201
-    # longitude= -122.414176324324
-
+    # name= "Visitacion Valley"  latitude= 37.7181267149201  longitude= -122.414176324324
     if len(number_names) == 39:
         for index in range(len(number_names)):
             #get the neigh id
             neigh = Neighborhood.query.filter(Neighborhood.neigh_id==idlist[index]).first()
             neigh.neigh_name = name[index]
         db.session.commit()
-
-        print("\n \n \n", "neigh updated")
        
     return 'OK', 200
 
