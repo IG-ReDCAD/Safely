@@ -209,7 +209,6 @@ class Route(db.Model):
                     score={self.score}>'
 
 
-
 class RouteNeigh(db.Model):
     """Data model for a route"""
 
