@@ -5,7 +5,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-
 class Category(db.Model):
     """Data model for a category."""
 
@@ -189,16 +188,6 @@ class Route(db.Model):
     def to_dict(self):
          """make a dictionary of a route"""
             
-        return {"route_id":self.route_id,
-                "user_id": self.user_id,
-                "route_name": self.route_name,
-                "route_start": self.route_start,
-                "route_end": self.route_end,
-                "score": self.score}
-
-    def makeDic(self):
-        """make a dictionary of a route"""
-
         return {"route_id":self.route_id,
                 "user_id": self.user_id,
                 "route_name": self.route_name,
