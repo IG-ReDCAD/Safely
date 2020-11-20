@@ -77,8 +77,9 @@ def getScore_neighborhood(avg_crimes):
 
     if(avg_crimes>=0.05):
         pred_category=8
-
+   
     return pred_category
+
 
 def password_verif(passwd):
     """verify the password"""
@@ -154,6 +155,7 @@ def view_mapNeigh():
     api_key = environ.get('API_KEY')
 
     return render_template("mapNeigh.html", api_key=api_key)
+
 
 @app.route("/selectNeigh", methods = ["POST"])
 def getNeigh():
@@ -368,6 +370,7 @@ def register_process():
 
     return redirect("/signin")    
 
+
 @app.route('/logout')
 def logout():
     """Log out"""
@@ -417,7 +420,6 @@ def user_detail(user_id):
             index += 1
 
         dic_cat_sum[eachroute] = dic_cat
-       
 
     return render_template("profile.html", user=user, dic=dic_cat_sum)
 
@@ -456,7 +458,6 @@ def route_detail(user_id):
                 break
         route_json['crimes_by_category'] = crimes_sum_sorted 
         user_routes.append(route_json)
-
 
     return jsonify(user_routes)
 
@@ -517,7 +518,6 @@ def send_m():
     msg = request.form.get("msg")
     user_id = session.get("user_id")
   
-
     # find the phone number of the user
     user = User.query.filter_by(user_id=user_id).first()
     message_body = "Sorry {}, This is a warning alert—check it out!\n The holder of the phone {} is going from {} to {}.".format(user.name,user.phone_num, route_start, route_end)
@@ -525,7 +525,6 @@ def send_m():
     account_sid = environ.get("ACCOUNT_SID")
     auth_token = environ.get("AUTH_TOKEN")
     my_phone = environ.get("MY_PHONE")
-
 
     client = Client(account_sid, auth_token)
     message = client.messages \
@@ -610,10 +609,10 @@ def showNeighborhood():
         "longitude": lng_list,
         "count_crime":count_crime_list,
         "api_key":environ.get("API_KEY")
-    }
-       
+    }   
         
     return jsonify(neigh_dic)
+
     
 # those variables are used to save the different google maps neighborhoods from ajax requests,
 # in order to update the data base
