@@ -1,13 +1,5 @@
 """Data model classes for a crime database
 """
-"""drobdb crimesData
-createdb crimeData
-go to python file $python3 -i <filename>
-db.create_all()
-
-in a new tab:
-psql <filename>
-"""
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -31,6 +23,7 @@ class Category(db.Model):
 
         return f'<Category category_id={self.category_id} category_name={self.category_name}\
                     count_crime ={self.count_crime} label = {self.label}>'
+    
 
 class Neighborhood(db.Model):
     """Data model for a neighborhood."""
@@ -47,7 +40,6 @@ class Neighborhood(db.Model):
 
     crimes = db.relationship('Crime', backref='neighborhood')
 
-
     def get_crimes_by_category(self):
         """Return a dictionary of crime categories and sum of crimes.
 
@@ -63,6 +55,7 @@ class Neighborhood(db.Model):
                 result[cat_name] += 1
             else:
                 result[cat_name] = 1
+                
         return result
 
     def get_coordinates_by_category(self):
@@ -80,8 +73,8 @@ class Neighborhood(db.Model):
                 result[cat_name].append((crime.latitude, crime.longitude))
             else:
                 result[cat_name] = [(crime.latitude, crime.longitude)]
+                
         return result
-
 
     def __repr__(self):
         """for printing."""
@@ -103,7 +96,6 @@ class Resolution(db.Model):
 
     crimes = db.relationship('Crime', backref='resolution')
 
-
     def __repr__(self):
         """for printing."""
 
@@ -124,7 +116,6 @@ class Subcategory(db.Model):
 
     crimes = db.relationship('Crime', backref='subcategory')
 
-
     def __repr__(self):
         """for printing."""
 
@@ -139,7 +130,6 @@ class Crime(db.Model):
     __tablename__ = 'crimes'
 
     crime_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    # crime_name = db.Column(db.String(100))
     category_id = db.Column(db.Integer, db.ForeignKey('categories.category_id'))
     subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategories.subcategory_id'))
     resolution_id = db.Column(db.Integer, db.ForeignKey('resolutions.resolution_id'))
@@ -152,7 +142,6 @@ class Crime(db.Model):
     latitude = db.Column(db.Float, nullable = False)
     longitude = db.Column(db.Float, nullable = False)
     label = db.Column(db.Integer)
-
 
     def __repr__(self):
         """for printing."""
@@ -173,10 +162,6 @@ class User(db.Model):
     email= db.Column(db.String(50), nullable=False)
     password=db.Column(db.String(100), nullable=False)
     phone_num=db.Column(db.String(100))
-    # phone_number=bd.Column(db.Integer)
-
-
-    
 
     def __repr__(self):
         """printing the user table as a string."""
@@ -196,13 +181,14 @@ class Route(db.Model):
     route_start = db.Column(db.String(100))
     route_end = db.Column(db.String(100))
     score = db.Column(db.Float)
-    
     user = db.relationship('User', backref='routes')
     neighborhoods = db.relationship('Neighborhood',
                                     secondary='routeneighs',
                                     backref='routes')
 
     def to_dict(self):
+         """make a dictionary of a route"""
+            
         return {"route_id":self.route_id,
                 "user_id": self.user_id,
                 "route_name": self.route_name,
@@ -225,7 +211,6 @@ class Route(db.Model):
 
         return self.route_id
 
-
     def __repr__(self):
         """for printing."""
 
@@ -245,12 +230,10 @@ class RouteNeigh(db.Model):
     route_id = db.Column(db.Integer, db.ForeignKey('routes.route_id'))
     neigh_id = db.Column(db.Integer, db.ForeignKey('neighborhoods.neigh_id'))
 
-
     def __repr__(self):
         """for printing."""
 
         return f'<route_id={self.route_id} neigh_id={self.neigh_id}>'
-
 
 
 def connect_to_db(app):
@@ -261,9 +244,6 @@ def connect_to_db(app):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app
     db.init_app(app)
-    
-
-
 
 if __name__ == '__main__':
     from server import app
